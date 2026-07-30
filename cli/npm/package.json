@@ -1,0 +1,19 @@
+{
+  "name": "@nicculus/simple-mcp",
+  "version": "0.1.0",
+  "description": "Installer/launcher for the simple-mcp CLI (wraps @nicculus/mcp-client)",
+  "type": "module",
+  "bin": {
+    "simple-mcp": "bin/simple-mcp.js"
+  },
+  "files": [
+    "bin"
+  ],
+  "dependencies": {
+    "@nicculus/mcp-client": "^0.4.0"
+  },
+  "engines": {
+    "node": ">=20.6.0"
+  },
+  "license": "MIT"
+}

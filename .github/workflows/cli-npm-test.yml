@@ -1,0 +1,30 @@
+name: CLI npm Test
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "cli/npm/**"
+      - ".github/workflows/cli-npm-test.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "cli/npm/**"
+      - ".github/workflows/cli-npm-test.yml"
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: cli/npm
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: cli/npm/package-lock.json
+      - run: npm ci
+      - name: Smoke test
+        run: node bin/simple-mcp.js --help

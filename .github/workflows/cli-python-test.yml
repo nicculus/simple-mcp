@@ -1,0 +1,34 @@
+name: CLI Python Test
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "cli/python/**"
+      - "client/python/**"
+      - ".github/workflows/cli-python-test.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "cli/python/**"
+      - "client/python/**"
+      - ".github/workflows/cli-python-test.yml"
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      # Install client/python from the local monorepo source first, so pip's
+      # dependency resolution for cli/python's "mcp-client-python" requirement
+      # is already satisfied and never falls through to the published PyPI
+      # package (which may be a stale/broken version, since a fix landing
+      # here doesn't take effect on PyPI until mcp-client-python is
+      # re-released).
+      - run: pip install ./client/python
+      - run: pip install ./cli/python
+      - name: Smoke test
+        run: simple-mcp --help

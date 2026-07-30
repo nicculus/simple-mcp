@@ -1,0 +1,147 @@
+name: Terraform AWS
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "infra/terraform/**"
+      - ".github/workflows/infra-terraform-aws.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "infra/terraform/**"
+      - ".github/workflows/infra-terraform-aws.yml"
+
+permissions:
+  id-token: write   # Required for OIDC
+  contents: read
+  pull-requests: write
+
+env:
+  TF_VERSION: "1.12.0"
+  AWS_REGION: "us-east-1"
+  TF_VAR_alarm_email: ${{ vars.TF_VAR_ALARM_EMAIL }}
+
+jobs:
+  check-changes:
+    name: Check changed paths
+    runs-on: ubuntu-latest
+    outputs:
+      terraform: ${{ steps.filter.outputs.terraform }}
+    steps:
+      - uses: actions/checkout@v6
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            terraform:
+              - 'infra/terraform/**'
+              - '.github/workflows/infra-terraform-aws.yml'
+
+  terraform:
+    name: Terraform
+    runs-on: ubuntu-latest
+    needs: check-changes
+    if: needs.check-changes.outputs.terraform == 'true' || github.event_name == 'workflow_dispatch'
+    defaults:
+      run:
+        working-directory: infra/terraform/environments/aws-dev
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Configure AWS Credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v6
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Resolve state bucket
+        id: backend
+        run: |
+          ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+          echo "bucket=mcp-infra-tfstate-${ACCOUNT_ID}" >> "$GITHUB_OUTPUT"
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v4
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+
+      - name: Terraform Format Check
+        run: terraform fmt -check -recursive
+
+      - name: Setup TFLint
+        uses: terraform-linters/setup-tflint@v6
+        with:
+          tflint_version: latest
+
+      - name: Init TFLint
+        run: tflint --init
+        working-directory: infra/terraform
+
+      - name: Run TFLint
+        run: tflint --recursive
+        working-directory: infra/terraform
+
+      - name: Run Checkov
+        working-directory: ${{ github.workspace }}
+        run: |
+          pip install checkov -q
+          checkov \
+            -d infra/terraform/bootstrap-aws \
+            -d infra/terraform/environments/aws-dev \
+            -d infra/terraform/modules/mcp-server-aws \
+            --framework terraform --quiet --soft-fail \
+            --skip-check CKV_AWS_144 \
+            --skip-check CKV2_AWS_62 \
+            --skip-check CKV_AWS_18 \
+            --skip-check CKV_AWS_117 \
+            --skip-check CKV_AWS_272 \
+            --skip-check CKV_AWS_309
+          # CKV_AWS_144: Cross-region replication overkill for dev TF state bucket
+          # CKV2_AWS_62: Event notifications not applicable for state bucket
+          # CKV_AWS_18: Access logging on state bucket is recursive
+          # CKV_AWS_117: Lambda VPC requires NAT gateway (~$32/month) — breaks zero-cost promise
+          # CKV_AWS_272: Code-signing is an enterprise feature out of scope for this template
+          # CKV_AWS_309: Auth enforced in Lambda via x-api-key, not at route level
+
+      - name: Terraform Init
+        run: |
+          terraform init \
+            -backend-config="bucket=${{ steps.backend.outputs.bucket }}" \
+            -backend-config="region=${{ env.AWS_REGION }}"
+
+      - name: Terraform Validate
+        run: terraform validate
+
+      - name: Terraform Plan
+        id: plan
+        run: terraform plan -no-color -out=tfplan
+        continue-on-error: true
+
+      # Post plan output as PR comment
+      - name: Comment Plan on PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v9
+        with:
+          script: |
+            const output = `#### Terraform Plan 📋
+            \`\`\`
+            ${{ steps.plan.outputs.stdout }}
+            \`\`\`
+            *Triggered by @${{ github.actor }}*`;
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: output
+            })
+
+      - name: Terraform Plan Status
+        if: steps.plan.outcome == 'failure'
+        run: exit 1
+
+      - name: Terraform Apply
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        run: terraform apply -auto-approve tfplan

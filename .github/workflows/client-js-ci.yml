@@ -1,0 +1,36 @@
+name: Client JS CI
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - "client/js/**"
+      - ".github/workflows/client-js-ci.yml"
+  pull_request:
+    branches: ["main"]
+    paths:
+      - "client/js/**"
+      - ".github/workflows/client-js-ci.yml"
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: client/js
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: client/js/package-lock.json
+
+      - run: npm ci
+
+      - name: Type check
+        run: npm run lint
+
+      - name: Build
+        run: npm run build

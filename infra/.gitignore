@@ -1,0 +1,22 @@
+# Terraform
+*.tfstate
+*.tfstate.*
+*.tfplan
+.terraform/
+# .terraform.lock.hcl is intentionally committed for reproducible builds
+crash.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+*.tfvars
+!example.tfvars
+*.tfbackend
+!*.tfbackend.example
+.vscode/
+.claude/
+
+# Python
+__pycache__/
+*.pyc
+.pytest_cache/

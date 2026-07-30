@@ -1,0 +1,27 @@
+name: Client Python Test
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "client/python/**"
+      - ".github/workflows/client-python-test.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "client/python/**"
+      - ".github/workflows/client-python-test.yml"
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: client/python
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install -e ".[dev]"
+      - run: pytest

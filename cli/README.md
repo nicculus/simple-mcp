@@ -9,6 +9,5 @@ underlying client as a dependency and re-exposes its CLI under the friendlier
 |------|--------------|-------|
 | [`npm/`](npm/) | `@nicculus/simple-mcp` on npm | `client/js` |
 | [`python/`](python/) | `simple-mcp` on PyPI | `client/python` |
-| [`powershell/`](powershell/) | `install.ps1` script | whichever of the above is available |
 
 See each subfolder's README for install instructions.

@@ -9,7 +9,6 @@ Monorepo for the MCP server infrastructure and its client libraries.
 | [`client/python/`](client/python/) | Python client library + CLI | [`mcp-client-python`](https://pypi.org/project/mcp-client-python/) on PyPI |
 | [`cli/npm/`](cli/npm/) | Launcher wrapping `client/js`'s CLI as `simple-mcp` | `@nicculus/simple-mcp` on npm |
 | [`cli/python/`](cli/python/) | Launcher wrapping `client/python`'s CLI as `simple-mcp` | `simple-mcp` on PyPI |
-| [`cli/powershell/`](cli/powershell/) | Bootstrap script installing one of the above on Windows | — |
 
 ## Releasing a package
 

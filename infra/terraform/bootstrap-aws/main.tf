@@ -40,7 +40,7 @@ variable "github_org" {
 variable "github_repo" {
   description = "Repository name (without org prefix)"
   type        = string
-  default     = "mcp-infra"
+  default     = "simple-mcp"
 }
 
 variable "project_name" {

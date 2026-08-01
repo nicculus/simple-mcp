@@ -22,6 +22,15 @@ jobs:
           node-version: "22"
           registry-url: "https://registry.npmjs.org"
 
+      - name: Set version from tag
+        run: |
+          VERSION="${GITHUB_REF_NAME#client-js-v}"
+          if [ -z "$VERSION" ]; then
+            echo "Could not extract a version from tag '$GITHUB_REF_NAME'" >&2
+            exit 1
+          fi
+          npm pkg set version="$VERSION"
+
       - run: npm ci
 
       - name: Type check

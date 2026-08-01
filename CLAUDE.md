@@ -9,10 +9,10 @@ A monorepo with three components, each self-contained with its own `CLAUDE.md`:
 - **`infra/`** — Terraform + GitHub Actions to deploy the MCP server on AWS, GCP, Azure. See `infra/CLAUDE.md`.
 - **`client/js/`** — TypeScript client library + CLI, published to npm as `@nicculus/mcp-client`. See `client/js/CLAUDE.md`.
 - **`client/python/`** — Python client library + CLI, published to PyPI as `mcp-client-python`. See `client/python/CLAUDE.md`.
-- **`cli/npm/`** — thin launcher installing `client/js` as a dependency, published to npm as `@nicculus/simple-mcp`.
-- **`cli/python/`** — thin launcher installing `client/python` as a dependency, published to PyPI as `simple-mcp`.
+- **`cli/npm/`** — thin launcher installing `client/js` as a dependency, published to npm as `simplemcp`.
+- **`cli/python/`** — thin launcher installing `client/python` as a dependency, published to PyPI as `simplemcp`.
 
-The `cli/*` packages are not a third implementation — they exist only to install and re-expose the existing `client/js`/`client/python` CLIs under the `simple-mcp` command name for users who'd rather not know the underlying package names.
+The `cli/*` packages are not a third implementation — they exist only to install and re-expose the existing `client/js`/`client/python` CLIs under the `simplemcp` command name for users who'd rather not know the underlying package names.
 
 Commands documented in each subfolder's `CLAUDE.md` are written relative to that subfolder — `cd` into it first.
 

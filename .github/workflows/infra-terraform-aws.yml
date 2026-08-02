@@ -51,18 +51,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
 
-      - name: Configure AWS Credentials (OIDC)
-        uses: aws-actions/configure-aws-credentials@v6
-        with:
-          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
-          aws-region: ${{ env.AWS_REGION }}
-
-      - name: Resolve state bucket
-        id: backend
-        run: |
-          ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
-          echo "bucket=mcp-infra-tfstate-${ACCOUNT_ID}" >> "$GITHUB_OUTPUT"
-
+      # --- Static analysis -----------------------------------------------
+      # These need no cloud access. They run before OIDC auth so that every
+      # PR still gets fmt/tflint/checkov feedback even when cloud credentials
+      # are unavailable (e.g. before bootstrap, or on a fork).
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v4
         with:
@@ -105,6 +97,19 @@ jobs:
           # CKV_AWS_117: Lambda VPC requires NAT gateway (~$32/month) — breaks zero-cost promise
           # CKV_AWS_272: Code-signing is an enterprise feature out of scope for this template
           # CKV_AWS_309: Auth enforced in Lambda via x-api-key, not at route level
+
+      # --- Cloud-authenticated steps -------------------------------------
+      - name: Configure AWS Credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v6
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Resolve state bucket
+        id: backend
+        run: |
+          ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+          echo "bucket=mcp-infra-tfstate-${ACCOUNT_ID}" >> "$GITHUB_OUTPUT"
 
       - name: Terraform Init
         run: |

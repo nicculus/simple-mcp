@@ -55,22 +55,14 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
 
-      - name: Authenticate to GCP
-        uses: google-github-actions/auth@v2
-        with:
-          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
-          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
-
+      # --- Static analysis -----------------------------------------------
+      # These need no cloud access. They run before OIDC auth so that every
+      # PR still gets fmt/checkov feedback even when cloud credentials are
+      # unavailable (e.g. before bootstrap, or on a fork).
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v4
         with:
           terraform_version: ${{ env.TF_VERSION }}
-
-      - name: Terraform Init
-        working-directory: ${{ env.WORKING_DIR }}
-        run: |
-          terraform init \
-            -backend-config="bucket=${{ env.GCP_STATE_BUCKET }}"
 
       - name: Terraform Format Check
         working-directory: ${{ env.WORKING_DIR }}
@@ -92,6 +84,19 @@ jobs:
           # CKV_GCP_84: CSEK for Artifact Registry is operationally complex; Google-managed keys sufficient for dev
           # CKV_GCP_49: serviceAccountAdmin/User required for CI to manage Cloud Run service account via Terraform
           # CKV_GCP_41: serviceAccountUser at project level required for CI to act as Cloud Run service account
+
+      # --- Cloud-authenticated steps -------------------------------------
+      - name: Authenticate to GCP
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+
+      - name: Terraform Init
+        working-directory: ${{ env.WORKING_DIR }}
+        run: |
+          terraform init \
+            -backend-config="bucket=${{ env.GCP_STATE_BUCKET }}"
 
       - name: Terraform Validate
         working-directory: ${{ env.WORKING_DIR }}

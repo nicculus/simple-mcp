@@ -7,8 +7,8 @@ Monorepo for the MCP server infrastructure and its client libraries.
 | [`infra/`](infra/) | Terraform + GitHub Actions to deploy the MCP server on AWS, GCP, and Azure | — |
 | [`client/js/`](client/js/) | TypeScript client library + CLI | [`@nicculus/mcp-client`](https://www.npmjs.com/package/@nicculus/mcp-client) on npm |
 | [`client/python/`](client/python/) | Python client library + CLI | [`mcp-client-python`](https://pypi.org/project/mcp-client-python/) on PyPI |
-| [`cli/npm/`](cli/npm/) | Launcher wrapping `client/js`'s CLI as `simple-mcp` | `@nicculus/simple-mcp` on npm |
-| [`cli/python/`](cli/python/) | Launcher wrapping `client/python`'s CLI as `simple-mcp` | `simple-mcp` on PyPI |
+| [`cli/npm/`](cli/npm/) | Launcher wrapping `client/js`'s CLI as `simplemcp` | `simplemcp` on npm |
+| [`cli/python/`](cli/python/) | Launcher wrapping `client/python`'s CLI as `simplemcp` | `simplemcp` on PyPI |
 
 ## Releasing a package
 

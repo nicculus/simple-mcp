@@ -34,7 +34,7 @@ jobs:
       - run: npm ci
 
       - name: Smoke test
-        run: node bin/simple-mcp.js --help
+        run: node bin/simplemcp.js --help
 
       - name: Publish
         run: npm publish --access public

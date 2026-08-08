@@ -32,6 +32,14 @@ terraform {
 provider "google" {
   project = var.gcp_project_id
   region  = var.gcp_region
+
+  # billingbudgets.googleapis.com (and some other APIs) reject user-credential
+  # ADC requests with "requires a quota project" even after
+  # `gcloud auth application-default set-quota-project`, because that quota
+  # project doesn't reliably propagate to every API. Forcing it here via
+  # X-Goog-User-Project makes bootstrap work regardless of local ADC state.
+  billing_project       = var.gcp_project_id
+  user_project_override = true
 }
 
 # --- Variables ---------------------------------------------------------------

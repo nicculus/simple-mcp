@@ -150,9 +150,10 @@ resource "google_storage_bucket" "terraform_state" {
     }
   }
 
-  logging {
-    log_bucket = google_storage_bucket.terraform_state.name
-  }
+  # No access-logging block: a bucket can't be its own log destination
+  # (Terraform rejects it as a self-referential block), and a separate
+  # logs-only bucket is overkill for a dev-only Terraform state bucket —
+  # same tradeoff the AWS bootstrap makes (see CKV_AWS_18 skip there).
 
   lifecycle {
     prevent_destroy = true

@@ -48,6 +48,39 @@ variable "project_name" {
   default = "mcp-infra"
 }
 
+# GitHub now issues immutable, ID-qualified OIDC subjects for some
+# accounts/repos - "repo:org@org_id/repo@repo_id:ref:..." instead of the
+# classic "repo:org/repo:ref:...". Matching "repository" instead of "sub"
+# (as this file previously did) resolves the shape mismatch, but AWS
+# rejects it outright: IAM requires an OIDC trust policy for this
+# provider to include a *scoped* condition on "sub" or
+# "job_workflow_ref" specifically -
+#   MalformedPolicyDocument: ... must evaluate ... sub or
+#   job_workflow_ref which is not scoped to all.
+# So "sub" has to stay, and the value has to match whichever shape this
+# account's tokens actually use. Find the IDs with:
+#   gh api users/YOUR_GITHUB_USERNAME --jq .id
+#   gh api repos/YOUR_GITHUB_USERNAME/YOUR_REPO --jq .id
+variable "github_org_id" {
+  description = "Numeric GitHub user/org ID, only needed if your account issues ID-qualified OIDC subjects"
+  type        = string
+  default     = ""
+}
+
+variable "github_repo_id" {
+  description = "Numeric GitHub repository ID, only needed if your account issues ID-qualified OIDC subjects"
+  type        = string
+  default     = ""
+}
+
+locals {
+  github_subject_repo = (
+    var.github_org_id != "" && var.github_repo_id != ""
+    ? "${var.github_org}@${var.github_org_id}/${var.github_repo}@${var.github_repo_id}"
+    : "${var.github_org}/${var.github_repo}"
+  )
+}
+
 data "aws_caller_identity" "current" {}
 
 # --- KMS key for state bucket encryption -------------------------------------
@@ -179,18 +212,13 @@ data "aws_iam_policy_document" "github_actions_assume" {
       values   = ["sts.amazonaws.com"]
     }
 
-    # Match on the "repository" claim (plain "org/repo"), not "sub".
-    # GitHub now issues immutable, ID-qualified subjects for some
-    # accounts/repos - "repo:org@org_id/repo@repo_id:ref:..." instead of
-    # the classic "repo:org/repo:ref:...". A StringLike match against
-    # "sub" assuming the classic shape silently never matches for those
-    # tokens, and AssumeRoleWithWebIdentity fails with a generic
-    # "Not authorized" that looks identical to a genuinely wrong trust
-    # policy. "repository" is present in both token shapes.
+    # Must be "sub" (AWS mandates it, see the comment above the
+    # github_org_id variable) with a value matching whichever subject
+    # shape this account's tokens actually use - classic or ID-qualified.
     condition {
-      test     = "StringEquals"
-      variable = "token.actions.githubusercontent.com:repository"
-      values   = ["${var.github_org}/${var.github_repo}"]
+      test     = "StringLike"
+      variable = "token.actions.githubusercontent.com:sub"
+      values   = ["repo:${local.github_subject_repo}:*"]
     }
   }
 }

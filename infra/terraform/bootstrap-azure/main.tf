@@ -66,6 +66,39 @@ variable "project_name" {
   default = "mcp-infra"
 }
 
+# GitHub now issues immutable, ID-qualified OIDC subjects for some
+# accounts/repos - "repo:org@org_id/repo@repo_id:ref:..." instead of the
+# classic "repo:org/repo:ref:...". Azure federated credentials match the
+# "subject" field as an exact literal string with no wildcards and no
+# alternate claim to match against (unlike AWS/GCP, which can match a
+# different claim, e.g. "repository", instead of "sub"), so if your
+# tokens use the new shape these two must be set or every federated
+# credential below will silently never match, failing with a generic
+# "AADSTS700213: No matching federated identity record found" - the
+# Azure equivalent of AWS's "Not authorized to perform
+# sts:AssumeRoleWithWebIdentity". Find them with:
+#   gh api users/YOUR_GITHUB_USERNAME --jq .id
+#   gh api repos/YOUR_GITHUB_USERNAME/YOUR_REPO --jq .id
+variable "github_org_id" {
+  description = "Numeric GitHub user/org ID, only needed if your account issues ID-qualified OIDC subjects"
+  type        = string
+  default     = ""
+}
+
+variable "github_repo_id" {
+  description = "Numeric GitHub repository ID, only needed if your account issues ID-qualified OIDC subjects"
+  type        = string
+  default     = ""
+}
+
+locals {
+  github_subject_repo = (
+    var.github_org_id != "" && var.github_repo_id != ""
+    ? "${var.github_org}@${var.github_org_id}/${var.github_repo}@${var.github_repo_id}"
+    : "${var.github_org}/${var.github_repo}"
+  )
+}
+
 # --- Data sources ------------------------------------------------------------
 
 data "azurerm_subscription" "current" {}
@@ -161,7 +194,7 @@ resource "azuread_application_federated_identity_credential" "main" {
   display_name   = "github-actions-main"
   audiences      = ["api://AzureADTokenExchange"]
   issuer         = "https://token.actions.githubusercontent.com"
-  subject        = "repo:${var.github_org}/${var.github_repo}:ref:refs/heads/main"
+  subject        = "repo:${local.github_subject_repo}:ref:refs/heads/main"
 }
 
 # Federated credential for pull requests
@@ -170,7 +203,7 @@ resource "azuread_application_federated_identity_credential" "pr" {
   display_name   = "github-actions-pr"
   audiences      = ["api://AzureADTokenExchange"]
   issuer         = "https://token.actions.githubusercontent.com"
-  subject        = "repo:${var.github_org}/${var.github_repo}:pull_request"
+  subject        = "repo:${local.github_subject_repo}:pull_request"
 }
 
 # Federated credential for workflow_dispatch
@@ -179,7 +212,7 @@ resource "azuread_application_federated_identity_credential" "dispatch" {
   display_name   = "github-actions-dispatch"
   audiences      = ["api://AzureADTokenExchange"]
   issuer         = "https://token.actions.githubusercontent.com"
-  subject        = "repo:${var.github_org}/${var.github_repo}:environment:azure-dev"
+  subject        = "repo:${local.github_subject_repo}:environment:azure-dev"
 }
 
 # --- Role assignments --------------------------------------------------------

@@ -58,7 +58,7 @@ variable "github_org" {
 variable "github_repo" {
   description = "GitHub repository name"
   type        = string
-  default     = "mcp-infra"
+  default     = "simple-mcp"
 }
 
 variable "project_name" {

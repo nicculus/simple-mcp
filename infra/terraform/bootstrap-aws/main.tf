@@ -179,10 +179,18 @@ data "aws_iam_policy_document" "github_actions_assume" {
       values   = ["sts.amazonaws.com"]
     }
 
+    # Match on the "repository" claim (plain "org/repo"), not "sub".
+    # GitHub now issues immutable, ID-qualified subjects for some
+    # accounts/repos - "repo:org@org_id/repo@repo_id:ref:..." instead of
+    # the classic "repo:org/repo:ref:...". A StringLike match against
+    # "sub" assuming the classic shape silently never matches for those
+    # tokens, and AssumeRoleWithWebIdentity fails with a generic
+    # "Not authorized" that looks identical to a genuinely wrong trust
+    # policy. "repository" is present in both token shapes.
     condition {
-      test     = "StringLike"
-      variable = "token.actions.githubusercontent.com:sub"
-      values   = ["repo:${var.github_org}/${var.github_repo}:*"]
+      test     = "StringEquals"
+      variable = "token.actions.githubusercontent.com:repository"
+      values   = ["${var.github_org}/${var.github_repo}"]
     }
   }
 }

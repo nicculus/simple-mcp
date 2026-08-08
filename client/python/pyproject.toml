@@ -10,6 +10,12 @@ readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "MIT" }
 dependencies = [
+    # Held at mcp 1.x deliberately. mcp 2.x implements the 2026-07-28
+    # stateless spec and renames the transport entrypoint
+    # (streamablehttp_client -> streamable_http_client, headers= replaced by
+    # an httpx2 client, 3-tuple yield -> 2-tuple). The server side can't
+    # speak 2026-07-28 yet, so bumping this alone would only diverge the
+    # clients. See docs/mcp-2026-07-28-migration.md.
     "mcp>=1.0,<2.0",
     "click>=8.0",
     "python-dotenv>=1.0",

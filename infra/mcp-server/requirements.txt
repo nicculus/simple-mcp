@@ -1,4 +1,10 @@
-fastmcp-slim[server]>=3.0
+# fastmcp-slim 3.x resolves the MCP SDK to mcp 1.x, which speaks protocol
+# versions up to 2025-11-25. mcp 2.x implements the 2026-07-28 stateless
+# spec (no initialize handshake, no Mcp-Session-Id, header-based routing) --
+# a wire-protocol break, not just an API break. Cap the major so a future
+# FastMCP release can't float the server onto a different protocol version
+# than the clients speak. See docs/mcp-2026-07-28-migration.md before lifting.
+fastmcp-slim[server]>=3.0,<4.0
 httpx>=0.27
 starlette>=0.40
 uvicorn>=0.32

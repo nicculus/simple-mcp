@@ -123,7 +123,11 @@ resource "azurerm_resource_provider_registration" "key_vault" {
 }
 
 resource "azurerm_resource_provider_registration" "insights" {
-  name = "Microsoft.Insights"
+  # Unlike other RPs, Azure Monitor's provider namespace is registered
+  # all-lowercase ("microsoft.insights") rather than the usual PascalCase
+  # "Microsoft.Insights" — the PascalCase form is rejected outright with
+  # "was not found in the list of supported Resource Providers".
+  name = "microsoft.insights"
 }
 
 # --- Resource group ----------------------------------------------------------

@@ -130,6 +130,16 @@ resource "azurerm_resource_provider_registration" "insights" {
   name = "microsoft.insights"
 }
 
+# Not every subscription type comes with Microsoft.Storage pre-registered
+# (unlike Microsoft.Resources/Microsoft.Authorization, which always are), and
+# ARM_SKIP_PROVIDER_REGISTRATION=true means the provider won't auto-register
+# it on demand — without this, azurerm_storage_account fails with
+# "MissingSubscriptionRegistration: The subscription is not registered to
+# use namespace 'Microsoft.Storage'".
+resource "azurerm_resource_provider_registration" "storage" {
+  name = "Microsoft.Storage"
+}
+
 # --- Resource group ----------------------------------------------------------
 
 resource "azurerm_resource_group" "bootstrap" {
@@ -154,6 +164,8 @@ resource "azurerm_storage_account" "terraform_state" {
   }
 
   min_tls_version = "TLS1_2"
+
+  depends_on = [azurerm_resource_provider_registration.storage]
 
   tags = {
     project    = var.project_name

@@ -1,11 +1,11 @@
 # @nicculus/simplemcp (npm)
 
 Thin launcher around [`@nicculus/mcp-client`](https://www.npmjs.com/package/@nicculus/mcp-client) — installs it as a
-dependency and re-exposes its CLI under the `simplemcp` command name.
+dependency and re-exposes its CLI under the `smcp` command name.
 
 ```sh
 npm install -g @nicculus/simplemcp
-simplemcp --help
+smcp --help
 ```
 
 If you're fine with the original command name, you can skip this wrapper and

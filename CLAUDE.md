@@ -12,7 +12,7 @@ A monorepo with three components, each self-contained with its own `CLAUDE.md`:
 - **`cli/npm/`** — thin launcher installing `client/js` as a dependency, published to npm as `@nicculus/simplemcp`.
 - **`cli/python/`** — thin launcher installing `client/python` as a dependency, published to PyPI as `nicculus-simplemcp`.
 
-The `cli/*` packages are not a third implementation — they exist only to install and re-expose the existing `client/js`/`client/python` CLIs under the `simplemcp` command name for users who'd rather not know the underlying package names.
+The `cli/*` packages are not a third implementation — they exist only to install and re-expose the existing `client/js`/`client/python` CLIs under the `smcp` command name for users who'd rather not know the underlying package names.
 
 Commands documented in each subfolder's `CLAUDE.md` are written relative to that subfolder — `cd` into it first.
 

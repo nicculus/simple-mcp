@@ -1,10 +1,10 @@
 {
   "name": "@nicculus/simplemcp",
-  "version": "0.1.0",
-  "description": "Installer/launcher for the simplemcp CLI (wraps @nicculus/mcp-client)",
+  "version": "0.2.0",
+  "description": "Installer/launcher for the smcp CLI (wraps @nicculus/mcp-client)",
   "type": "module",
   "bin": {
-    "simplemcp": "bin/simplemcp.js"
+    "smcp": "bin/smcp.js"
   },
   "files": [
     "bin"

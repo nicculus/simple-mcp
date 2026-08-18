@@ -10,16 +10,17 @@ readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "MIT" }
 dependencies = [
-    # Held at mcp 1.x deliberately. mcp 2.x implements the 2026-07-28
-    # stateless spec and renames the transport entrypoint
-    # (streamablehttp_client -> streamable_http_client, headers= replaced by
-    # an httpx2 client, 3-tuple yield -> 2-tuple). The server side can't
-    # speak 2026-07-28 yet, so bumping this alone would only diverge the
-    # clients. See docs/mcp-2026-07-28-migration.md.
-    "mcp>=1.0,<2.0",
+    # mcp 2.x implements the 2026-07-28 stateless spec. Server-first
+    # migration completed (infra/mcp-server on fastmcp-slim 4.x); this is
+    # the client-side half. See docs/mcp-2026-07-28-migration.md.
+    "mcp>=2.0,<3.0",
     "click>=8.0",
     "python-dotenv>=1.0",
-    "httpx>=0.27",
+    # No direct httpx dependency: mcp 2.x's transport uses httpx2
+    # internally (create_mcp_http_client), which this package never
+    # imports directly, and mcp 2.x doesn't depend on httpx (v1) at all --
+    # the old httpx>=0.27 pin was dead weight once nothing in this
+    # codebase used it directly.
 ]
 
 [project.scripts]

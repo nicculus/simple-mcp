@@ -86,7 +86,10 @@ def get_server_info() -> str:
         "version": "0.1.0",
         "cloud": os.environ.get("CLOUD_PROVIDER", "local"),
         "capabilities": ["tools", "resources", "prompts"],
-        "transport": "streamable-http",
+        # FastMCP 4.x (mcp 2.x) renamed its default transport literal from
+        # "streamable-http" to "http" -- both route to the same streamable
+        # HTTP app, but "http" is now the accurate/current name to advertise.
+        "transport": "http",
     })
 
 

@@ -1,11 +1,11 @@
-# simplemcp (PyPI)
+# smcp (PyPI)
 
 Thin launcher around [`mcp-client-python`](https://pypi.org/project/mcp-client-python/) — installs it as a
-dependency and re-exposes its CLI under the `simplemcp` command name.
+dependency and re-exposes its CLI under the `smcp` command name.
 
 ```sh
 pip install nicculus-simplemcp
-simplemcp --help
+smcp --help
 ```
 
 If you're fine with the original command name, you can skip this wrapper and

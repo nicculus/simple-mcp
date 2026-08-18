@@ -13,7 +13,7 @@ try {
   const clientEntryUrl = import.meta.resolve("@nicculus/mcp-client");
   cliPath = path.join(path.dirname(fileURLToPath(clientEntryUrl)), "cli.js");
 } catch (err) {
-  console.error("simplemcp: could not locate @nicculus/mcp-client — is it installed?");
+  console.error("smcp: could not locate @nicculus/mcp-client — is it installed?");
   console.error(err instanceof Error ? err.message : err);
   process.exit(1);
 }
@@ -26,7 +26,7 @@ const result = spawnSync(process.execPath, [cliPath, ...process.argv.slice(2)], 
 });
 
 if (result.error) {
-  console.error(`simplemcp: failed to launch mcp-client (${result.error.message})`);
+  console.error(`smcp: failed to launch mcp-client (${result.error.message})`);
   process.exit(1);
 }
 

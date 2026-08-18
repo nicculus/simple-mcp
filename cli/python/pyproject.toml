@@ -4,8 +4,8 @@ build-backend = "hatchling.build"
 
 [project]
 name = "nicculus-simplemcp"
-version = "0.1.0"
-description = "Installer/launcher for the simplemcp CLI (wraps mcp-client-python)"
+version = "0.2.0"
+description = "Installer/launcher for the smcp CLI (wraps mcp-client-python)"
 readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "MIT" }
@@ -14,10 +14,10 @@ dependencies = [
 ]
 
 [project.scripts]
-simplemcp = "mcp_client.cli:cli"
+smcp = "mcp_client.cli:cli"
 
 # This package has no code of its own — it exists purely to install
 # mcp-client-python as a dependency and re-expose its `cli` click group
-# under the `simplemcp` command name.
+# under the `smcp` command name.
 [tool.hatch.build.targets.wheel]
 bypass-selection = true

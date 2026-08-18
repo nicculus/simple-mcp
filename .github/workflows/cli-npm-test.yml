@@ -27,4 +27,4 @@ jobs:
           cache-dependency-path: cli/npm/package-lock.json
       - run: npm ci
       - name: Smoke test
-        run: node bin/simplemcp.js --help
+        run: node bin/smcp.js --help

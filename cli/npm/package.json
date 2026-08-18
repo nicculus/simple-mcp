@@ -10,7 +10,7 @@
     "bin"
   ],
   "dependencies": {
-    "@nicculus/mcp-client": "^0.4.0"
+    "@nicculus/mcp-client": "^0.5.0"
   },
   "engines": {
     "node": ">=20.6.0"

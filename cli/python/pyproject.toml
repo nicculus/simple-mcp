@@ -3,7 +3,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "simplemcp"
+name = "nicculus-simplemcp"
 version = "0.1.0"
 description = "Installer/launcher for the simplemcp CLI (wraps mcp-client-python)"
 readme = "README.md"

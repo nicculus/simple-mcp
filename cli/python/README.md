@@ -4,7 +4,7 @@ Thin launcher around [`mcp-client-python`](https://pypi.org/project/mcp-client-p
 dependency and re-exposes its CLI under the `simplemcp` command name.
 
 ```sh
-pip install simplemcp
+pip install nicculus-simplemcp
 simplemcp --help
 ```
 

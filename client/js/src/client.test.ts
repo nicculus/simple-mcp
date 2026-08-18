@@ -18,8 +18,12 @@ const { mockInstance, MockClient, MockTransport } = vi.hoisted(() => {
   };
 });
 
-vi.mock("@modelcontextprotocol/sdk/client/index.js", () => ({ Client: MockClient }));
-vi.mock("@modelcontextprotocol/sdk/client/streamableHttp.js", () => ({
+// v2 flattens Client and StreamableHTTPClientTransport into one module path
+// (they were separate subpath imports under @modelcontextprotocol/sdk), so
+// this needs a single vi.mock -- two calls targeting the same path clobber
+// each other rather than merging.
+vi.mock("@modelcontextprotocol/client", () => ({
+  Client: MockClient,
   StreamableHTTPClientTransport: MockTransport,
 }));
 

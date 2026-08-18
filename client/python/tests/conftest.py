@@ -76,13 +76,15 @@ def mock_mcp_session(
     prompts=None,
     prompt_messages=None,
 ):
-    """Patch streamablehttp_client and ClientSession for client unit tests.
+    """Patch create_mcp_http_client, streamable_http_client, and ClientSession
+    for client unit tests.
 
-    Yields (mock_transport_fn, mock_session) so callers can make assertions
-    about how the transport was invoked.
+    Yields (mock_transport_fn, mock_session, mock_http_client_fn) so callers
+    can make assertions about how the http client factory and transport were
+    invoked.
     """
     mock_session = AsyncMock()
-    mock_session.initialize = AsyncMock()
+    mock_session.discover = AsyncMock()
     mock_session.list_tools = AsyncMock(
         return_value=MagicMock(tools=tools if tools is not None else [])
     )
@@ -107,13 +109,20 @@ def mock_mcp_session(
     session_cm.__aexit__ = AsyncMock(return_value=False)
 
     transport_cm = MagicMock()
-    transport_cm.__aenter__ = AsyncMock(return_value=(MagicMock(), MagicMock(), MagicMock()))
+    transport_cm.__aenter__ = AsyncMock(return_value=(MagicMock(), MagicMock()))
     transport_cm.__aexit__ = AsyncMock(return_value=False)
 
     mock_transport_fn = MagicMock(return_value=transport_cm)
 
+    http_client_cm = MagicMock()
+    http_client_cm.__aenter__ = AsyncMock(return_value=MagicMock(name="http_client"))
+    http_client_cm.__aexit__ = AsyncMock(return_value=False)
+
+    mock_http_client_fn = MagicMock(return_value=http_client_cm)
+
     with (
-        patch("mcp_client.client.streamablehttp_client", mock_transport_fn),
+        patch("mcp_client.client.create_mcp_http_client", mock_http_client_fn),
+        patch("mcp_client.client.streamable_http_client", mock_transport_fn),
         patch("mcp_client.client.ClientSession", return_value=session_cm),
     ):
-        yield mock_transport_fn, mock_session
+        yield mock_transport_fn, mock_session, mock_http_client_fn

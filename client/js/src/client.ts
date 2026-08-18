@@ -1,11 +1,18 @@
 import { createRequire } from "module";
-import { Client } from "@modelcontextprotocol/sdk/client/index.js";
-import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
-import type { Tool, Resource, Prompt, PromptMessage } from "@modelcontextprotocol/sdk/types.js";
+import { Client, StreamableHTTPClientTransport } from "@modelcontextprotocol/client";
+import type { Tool, Resource, Prompt, PromptMessage } from "@modelcontextprotocol/client";
 
 const { version } = createRequire(import.meta.url)("../package.json") as {
   version: string;
 };
+
+// This package's own LATEST_PROTOCOL_VERSION/SUPPORTED_PROTOCOL_VERSIONS
+// constants are legacy-handshake values (LATEST_PROTOCOL_VERSION is
+// "2025-11-25" here) -- there's no exported constant for the modern spec,
+// confirmed empirically by pinning to LATEST_PROTOCOL_VERSION and getting
+// "pinning is for 2026-07-28 and later; ... 2025-era servers" back from the
+// SDK itself. The literal is the correct value, not a placeholder.
+const MODERN_PROTOCOL_VERSION = "2026-07-28";
 
 export interface MCPClientConfig {
   endpoint: string;
@@ -43,7 +50,15 @@ export class MCPClient {
   }
 
   private async withClient<T>(fn: (client: Client) => Promise<T>): Promise<T> {
-    const client = new Client({ name: "mcp-client", version });
+    // versionNegotiation defaults to "legacy" (the plain 2025 handshake,
+    // capped below 2026-07-28) -- carrying that default over silently would
+    // mean this client never actually speaks the new stateless spec despite
+    // the package bump. Pin to the exact modern revision the server speaks:
+    // no fallback, fails loudly if it can't be negotiated.
+    const client = new Client(
+      { name: "mcp-client", version },
+      { versionNegotiation: { mode: { pin: MODERN_PROTOCOL_VERSION } } },
+    );
     const transport = this.createTransport();
     await client.connect(transport);
     try {

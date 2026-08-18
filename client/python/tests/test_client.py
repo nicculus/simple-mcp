@@ -34,35 +34,34 @@ class TestListTools:
 
     def test_passes_endpoint_to_transport(self):
         client = MCPClient(endpoint="https://my-server.example.com/mcp")
-        with mock_mcp_session() as (mock_transport_fn, _):
+        with mock_mcp_session() as (mock_transport_fn, _, mock_http_client_fn):
             asyncio.run(client.list_tools())
-        mock_transport_fn.assert_called_once_with(
-            "https://my-server.example.com/mcp", headers={}
-        )
+        call_args, call_kwargs = mock_transport_fn.call_args
+        assert call_args[0] == "https://my-server.example.com/mcp"
+        assert call_kwargs["http_client"] is mock_http_client_fn.return_value.__aenter__.return_value
 
-    def test_passes_headers_to_transport(self):
+    def test_passes_headers_to_http_client(self):
         client = MCPClient(
             endpoint="https://example.com/mcp",
             headers={"x-api-key": "secret", "X-Custom": "foo"},
         )
-        with mock_mcp_session() as (mock_transport_fn, _):
+        with mock_mcp_session() as (_, _, mock_http_client_fn):
             asyncio.run(client.list_tools())
-        mock_transport_fn.assert_called_once_with(
-            "https://example.com/mcp",
-            headers={"x-api-key": "secret", "X-Custom": "foo"},
+        mock_http_client_fn.assert_called_once_with(
+            headers={"x-api-key": "secret", "X-Custom": "foo"}
         )
 
     def test_defaults_to_empty_headers(self):
         client = MCPClient(endpoint="https://example.com/mcp")
-        with mock_mcp_session() as (mock_transport_fn, _):
+        with mock_mcp_session() as (_, _, mock_http_client_fn):
             asyncio.run(client.list_tools())
-        _, call_kwargs = mock_transport_fn.call_args
+        _, call_kwargs = mock_http_client_fn.call_args
         assert call_kwargs["headers"] == {}
 
-    def test_initializes_session(self, client):
-        with mock_mcp_session() as (_, mock_session):
+    def test_discovers_protocol(self, client):
+        with mock_mcp_session() as (_, mock_session, _):
             asyncio.run(client.list_tools())
-        mock_session.initialize.assert_called_once()
+        mock_session.discover.assert_called_once()
 
 
 class TestCallTool:
@@ -73,27 +72,27 @@ class TestCallTool:
         assert result is expected
 
     def test_passes_tool_name(self, client):
-        with mock_mcp_session() as (_, mock_session):
+        with mock_mcp_session() as (_, mock_session, _):
             asyncio.run(client.call_tool("get_repo_summary"))
         mock_session.call_tool.assert_called_once_with("get_repo_summary", {})
 
     def test_passes_arguments(self, client):
         args = {"repo_url": "https://github.com/owner/repo"}
-        with mock_mcp_session() as (_, mock_session):
+        with mock_mcp_session() as (_, mock_session, _):
             asyncio.run(client.call_tool("get_repo_summary", args))
         mock_session.call_tool.assert_called_once_with("get_repo_summary", args)
 
     def test_defaults_arguments_to_empty_dict(self, client):
-        with mock_mcp_session() as (_, mock_session):
+        with mock_mcp_session() as (_, mock_session, _):
             asyncio.run(client.call_tool("my_tool"))
         _, call_args = mock_session.call_tool.call_args
         # second positional arg is the arguments dict
         assert mock_session.call_tool.call_args.args[1] == {}
 
-    def test_initializes_session(self, client):
-        with mock_mcp_session() as (_, mock_session):
+    def test_discovers_protocol(self, client):
+        with mock_mcp_session() as (_, mock_session, _):
             asyncio.run(client.call_tool("my_tool"))
-        mock_session.initialize.assert_called_once()
+        mock_session.discover.assert_called_once()
 
 
 class TestListResources:
@@ -110,19 +109,19 @@ class TestListResources:
 
     def test_passes_endpoint_to_transport(self):
         client = MCPClient(endpoint="https://my-server.example.com/mcp")
-        with mock_mcp_session() as (mock_transport_fn, _):
+        with mock_mcp_session() as (mock_transport_fn, _, mock_http_client_fn):
             asyncio.run(client.list_resources())
-        mock_transport_fn.assert_called_once_with(
-            "https://my-server.example.com/mcp", headers={}
-        )
+        call_args, call_kwargs = mock_transport_fn.call_args
+        assert call_args[0] == "https://my-server.example.com/mcp"
+        assert call_kwargs["http_client"] is mock_http_client_fn.return_value.__aenter__.return_value
 
-    def test_initializes_session(self, client):
-        with mock_mcp_session() as (_, mock_session):
+    def test_discovers_protocol(self, client):
+        with mock_mcp_session() as (_, mock_session, _):
             asyncio.run(client.list_resources())
-        mock_session.initialize.assert_called_once()
+        mock_session.discover.assert_called_once()
 
     def test_calls_list_resources_on_session(self, client):
-        with mock_mcp_session() as (_, mock_session):
+        with mock_mcp_session() as (_, mock_session, _):
             asyncio.run(client.list_resources())
         mock_session.list_resources.assert_called_once()
 
@@ -135,7 +134,7 @@ class TestReadResource:
         assert result == contents
 
     def test_passes_uri_to_session(self, client):
-        with mock_mcp_session() as (_, mock_session):
+        with mock_mcp_session() as (_, mock_session, _):
             asyncio.run(client.read_resource("config://region"))
         called_uri = mock_session.read_resource.call_args.args[0]
         assert str(called_uri) == "config://region"
@@ -145,10 +144,10 @@ class TestReadResource:
             result = asyncio.run(client.read_resource("server://info"))
         assert result == []
 
-    def test_initializes_session(self, client):
-        with mock_mcp_session() as (_, mock_session):
+    def test_discovers_protocol(self, client):
+        with mock_mcp_session() as (_, mock_session, _):
             asyncio.run(client.read_resource("server://info"))
-        mock_session.initialize.assert_called_once()
+        mock_session.discover.assert_called_once()
 
 
 class TestListPrompts:
@@ -163,13 +162,13 @@ class TestListPrompts:
             result = asyncio.run(client.list_prompts())
         assert result == []
 
-    def test_initializes_session(self, client):
-        with mock_mcp_session() as (_, mock_session):
+    def test_discovers_protocol(self, client):
+        with mock_mcp_session() as (_, mock_session, _):
             asyncio.run(client.list_prompts())
-        mock_session.initialize.assert_called_once()
+        mock_session.discover.assert_called_once()
 
     def test_calls_list_prompts_on_session(self, client):
-        with mock_mcp_session() as (_, mock_session):
+        with mock_mcp_session() as (_, mock_session, _):
             asyncio.run(client.list_prompts())
         mock_session.list_prompts.assert_called_once()
 
@@ -182,14 +181,14 @@ class TestGetPrompt:
         assert result == messages
 
     def test_passes_name_and_arguments(self, client):
-        with mock_mcp_session() as (_, mock_session):
+        with mock_mcp_session() as (_, mock_session, _):
             asyncio.run(client.get_prompt("analyze_endpoint", {"url": "https://example.com"}))
         mock_session.get_prompt.assert_called_once_with(
             "analyze_endpoint", {"url": "https://example.com"}
         )
 
     def test_passes_none_when_no_arguments(self, client):
-        with mock_mcp_session() as (_, mock_session):
+        with mock_mcp_session() as (_, mock_session, _):
             asyncio.run(client.get_prompt("analyze_endpoint"))
         mock_session.get_prompt.assert_called_once_with("analyze_endpoint", None)
 
@@ -198,7 +197,7 @@ class TestGetPrompt:
             result = asyncio.run(client.get_prompt("analyze_endpoint"))
         assert result == []
 
-    def test_initializes_session(self, client):
-        with mock_mcp_session() as (_, mock_session):
+    def test_discovers_protocol(self, client):
+        with mock_mcp_session() as (_, mock_session, _):
             asyncio.run(client.get_prompt("analyze_endpoint"))
-        mock_session.initialize.assert_called_once()
+        mock_session.discover.assert_called_once()

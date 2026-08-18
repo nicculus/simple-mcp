@@ -31,4 +31,4 @@ jobs:
       - run: pip install ./client/python
       - run: pip install ./cli/python
       - name: Smoke test
-        run: simplemcp --help
+        run: smcp --help

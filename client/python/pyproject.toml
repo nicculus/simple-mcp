@@ -39,6 +39,12 @@ source = "vcs"
 [tool.hatch.version.raw-options]
 # pyproject.toml lives two levels below the monorepo's git root (client/python -> client -> root).
 root = "../.."
+# Without these, git-describe matches ANY tag containing a digit — including
+# cli-python-v*, cli-npm-v*, client-js-v*, infra tags — and derives this
+# package's version from whichever one is most recent, not necessarily a
+# client-python-v* tag.
+tag_regex = "^client-python-v(?P<version>.+)$"
+git_describe_command = "git describe --dirty --tags --long --match client-python-v*"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/mcp_client"]

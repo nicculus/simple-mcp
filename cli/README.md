@@ -7,7 +7,7 @@ underlying client as a dependency and re-exposes its CLI under the friendlier
 
 | Path | Distribution | Wraps |
 |------|--------------|-------|
-| [`npm/`](npm/) | `simplemcp` on npm | `client/js` |
+| [`npm/`](npm/) | `@nicculus/simplemcp` on npm | `client/js` |
 | [`python/`](python/) | `simplemcp` on PyPI | `client/python` |
 
 See each subfolder's README for install instructions.

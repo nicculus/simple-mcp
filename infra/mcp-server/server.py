@@ -4,6 +4,7 @@ import re
 
 import httpx
 from fastmcp import FastMCP
+from mcp.types import LATEST_PROTOCOL_VERSION
 from starlette.applications import Starlette
 from starlette.requests import Request
 from starlette.responses import JSONResponse
@@ -83,6 +84,9 @@ def get_server_info() -> str:
     import json
     return json.dumps({
         "name": "mcp-infra-demo",
+        # Not sourced from package metadata -- this directory is deployed as
+        # a flat script (see Dockerfile/Dockerfile.lambda), not an installed
+        # distribution, so there's no importlib.metadata to read. Bump by hand.
         "version": "0.1.0",
         "cloud": os.environ.get("CLOUD_PROVIDER", "local"),
         "capabilities": ["tools", "resources", "prompts"],
@@ -90,6 +94,9 @@ def get_server_info() -> str:
         # "streamable-http" to "http" -- both route to the same streamable
         # HTTP app, but "http" is now the accurate/current name to advertise.
         "transport": "http",
+        # Sourced from the installed SDK so this can't drift from what the
+        # server actually speaks.
+        "protocol_version": LATEST_PROTOCOL_VERSION,
     })
 
 

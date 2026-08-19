@@ -17,6 +17,8 @@ with patch("cloud_secrets.get_secret", side_effect=lambda var: os.environ.get(va
     sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
     from server import _parse_repo, _github_headers, get_server_info, get_config, analyze_endpoint, troubleshoot_deployment, _auth_middleware, app
 
+from mcp.types import LATEST_PROTOCOL_VERSION
+
 
 # --- _parse_repo -------------------------------------------------------------
 
@@ -143,6 +145,10 @@ class TestGetServerInfo:
         monkeypatch.setenv("CLOUD_PROVIDER", "aws")
         result = json.loads(get_server_info())
         assert result["cloud"] == "aws"
+
+    def test_protocol_version_matches_sdk_constant(self):
+        result = json.loads(get_server_info())
+        assert result["protocol_version"] == LATEST_PROTOCOL_VERSION
 
 
 class TestGetConfig:

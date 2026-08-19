@@ -108,6 +108,37 @@ describe("parseHeaders", () => {
   });
 });
 
+// --- config set ----------------------------------------------------------------
+
+describe("config set", () => {
+  // Commander retains the previous parse's option values on `program` when a
+  // flag is omitted on a later parseAsync() of the same Command instance —
+  // harmless in real usage (smcp is always a fresh process per invocation),
+  // but it means these cases must run as one assertion sequence rather than
+  // independent `it`s, since each parse would otherwise see stale flags from
+  // the last one.
+  it("handles --endpoint only, --key only, both, and neither in sequence", async () => {
+    let logs = await run(["config", "set", "--endpoint", "https://example.com/mcp"]);
+    expect(logs.join("\n")).toBe('export MCP_ENDPOINT="https://example.com/mcp"');
+
+    logs = await run(["config", "set", "--endpoint", "", "--key", "sk-secret"]);
+    expect(logs.join("\n")).toBe('export MCP_HEADERS="x-api-key:sk-secret"');
+
+    logs = await run(["config", "set", "--endpoint", "https://example.com/mcp", "--key", "sk-secret"]);
+    expect(logs.join("\n")).toBe(
+      'export MCP_ENDPOINT="https://example.com/mcp"\nexport MCP_HEADERS="x-api-key:sk-secret"'
+    );
+
+    const exitSpy = vi.spyOn(process, "exit").mockImplementation(() => {
+      throw new Error("process.exit");
+    });
+    const errSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    await expect(run(["config", "set", "--endpoint", "", "--key", ""])).rejects.toThrow();
+    exitSpy.mockRestore();
+    errSpy.mockRestore();
+  });
+});
+
 // --- resources list ----------------------------------------------------------
 
 describe("resources list", () => {

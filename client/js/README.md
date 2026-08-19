@@ -13,6 +13,9 @@ npm install -g @nicculus/mcp-client
 ## CLI
 
 ```sh
+eval "$(mcp-client config set --endpoint https://YOUR_ENDPOINT/mcp --key YOUR_KEY)"
+
+# ...or set them yourself:
 export MCP_ENDPOINT=https://YOUR_ENDPOINT/mcp
 export MCP_HEADERS="x-api-key:YOUR_KEY"
 

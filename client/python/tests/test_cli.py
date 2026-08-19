@@ -46,6 +46,31 @@ def patched_client(tools=None, call_result=None, resources=None, resource_conten
     return patch("mcp_client.cli.MCPClient", return_value=mock_instance), mock_instance
 
 
+class TestConfigSet:
+    def test_endpoint_only(self, runner):
+        result = runner.invoke(cli, ["config", "set", "--endpoint", "https://example.com/mcp"])
+        assert result.exit_code == 0
+        assert result.output.strip() == 'export MCP_ENDPOINT="https://example.com/mcp"'
+
+    def test_key_only(self, runner):
+        result = runner.invoke(cli, ["config", "set", "--key", "sk-secret"])
+        assert result.exit_code == 0
+        assert result.output.strip() == 'export MCP_HEADERS="x-api-key:sk-secret"'
+
+    def test_both_flags(self, runner):
+        result = runner.invoke(
+            cli, ["config", "set", "--endpoint", "https://example.com/mcp", "--key", "sk-secret"]
+        )
+        assert result.exit_code == 0
+        lines = result.output.strip().splitlines()
+        assert lines[0] == 'export MCP_ENDPOINT="https://example.com/mcp"'
+        assert lines[1] == 'export MCP_HEADERS="x-api-key:sk-secret"'
+
+    def test_no_flags_errors(self, runner):
+        result = runner.invoke(cli, ["config", "set"])
+        assert result.exit_code != 0
+
+
 class TestToolsList:
     def test_human_output(self, runner):
         tools = [make_tool("tool_a", "Does A"), make_tool("tool_b", "Does B")]

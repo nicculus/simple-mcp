@@ -32,6 +32,8 @@ The CLI reads these at runtime — can also be placed in a `.env` file:
 
 **`src/mcp_client/cli.py`** — `click`-based CLI. Commands are namespaced under `tools` (`tools list`, `tools call <name>`). All commands accept `--json` for machine-readable output and `--header key:value` (repeatable) for custom headers. `_build_client()` merges `MCP_HEADERS` env var and `--header` flags before constructing the client.
 
+`config set --endpoint <url> --key <key>` prints `export MCP_ENDPOINT=...` / `export MCP_HEADERS="x-api-key:..."` lines rather than persisting anything — a CLI subprocess can't set variables in the caller's shell, so the intended usage is `eval "$(mcp-client config set ...)"`.
+
 ## Conventions
 
 - `--json` flag on every command outputs raw JSON for scripting

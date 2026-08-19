@@ -70,6 +70,26 @@ Environment variables:
   MCP_HEADERS    Headers as comma-separated key:value pairs (e.g. "x-api-key:YOUR_KEY")`
   );
 
+// --- config -------------------------------------------------------------------
+
+const config = program.command("config").description("Print shell exports for MCP_ENDPOINT / MCP_HEADERS");
+
+config
+  .command("set")
+  .description("Print export statements for the given endpoint/key (eval the output to apply)")
+  .option("--endpoint <url>", "MCP server endpoint URL")
+  .option("--key <key>", "API key, sent as the x-api-key header")
+  .action((opts: { endpoint?: string; key?: string }) => {
+    if (!opts.endpoint && !opts.key) {
+      console.error("Error: pass --endpoint and/or --key");
+      process.exit(1);
+    }
+    const lines: string[] = [];
+    if (opts.endpoint) lines.push(`export MCP_ENDPOINT="${opts.endpoint}"`);
+    if (opts.key) lines.push(`export MCP_HEADERS="x-api-key:${opts.key}"`);
+    console.log(lines.join("\n"));
+  });
+
 // --- tools ------------------------------------------------------------------
 
 const tools = program.command("tools").description("Manage and call tools");

@@ -42,6 +42,24 @@ def cli() -> None:
 
 
 @cli.group()
+def config() -> None:
+    """Print shell exports for MCP_ENDPOINT / MCP_HEADERS."""
+
+
+@config.command("set")
+@click.option("--endpoint", "endpoint", metavar="URL", help="MCP server endpoint URL.")
+@click.option("--key", "key", metavar="KEY", help="API key, sent as the x-api-key header.")
+def config_set(endpoint: str | None, key: str | None) -> None:
+    """Print export statements for the given endpoint/key (eval the output to apply)."""
+    if not endpoint and not key:
+        raise click.ClickException("pass --endpoint and/or --key")
+    if endpoint:
+        click.echo(f'export MCP_ENDPOINT="{endpoint}"')
+    if key:
+        click.echo(f'export MCP_HEADERS="x-api-key:{key}"')
+
+
+@cli.group()
 def tools() -> None:
     """Tool operations."""
 
